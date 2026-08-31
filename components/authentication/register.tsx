@@ -110,10 +110,40 @@ function RegisterComponent() {
               />
             </div>
 
+            {/* Role Selection */}
+            <fieldset>
+              <legend className="mb-2 block text-sm font-semibold text-gray-800">
+                Choose your role
+              </legend>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 transition hover:border-primary/40 hover:bg-primary/5">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="administrator"
+                    defaultChecked
+                    className="h-4 w-4 accent-primary"
+                  />
+                  Administrator
+                </label>
+
+                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 transition hover:border-primary/40 hover:bg-primary/5">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="traveller"
+                    className="h-4 w-4 accent-primary"
+                  />
+                  Traveller
+                </label>
+              </div>
+            </fieldset>
+
             {/* Create Account */}
             <button
               type="submit"
-              className="h-11 w-full rounded-lg bg-primary text-sm font-semibold text-white transition hover:bg-primary"
+              className="h-11 w-full rounded-lg bg-[#078579] text-sm font-semibold text-white transition hover:bg-primary"
             >
               Create account
             </button>
