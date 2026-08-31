@@ -1,5 +1,5 @@
 import SignInPage from "@/components/authentication/sigin";
 
-export default function Home() {
-  return 
+export default function LoginPage() {
+  return <SignInPage />;
 }
