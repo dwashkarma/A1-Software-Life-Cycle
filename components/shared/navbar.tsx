@@ -63,8 +63,6 @@ export default function Navbar() {
     router.push("/authentication/login");
   };
 
-
-  
   return (
     <header className="border-b border-gray-200 bg-white">
       <nav className="mx-auto flex h-16 w-full items-center justify-center lg:justify-between px-14">

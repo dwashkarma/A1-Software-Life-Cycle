@@ -30,8 +30,6 @@ export default async function MyItineraryPage() {
     .populate("attractions")
     .sort({ createdAt: -1 });
 
-  const primaryItinerary = itineraries[0];
-
   return (
     <div className="min-h-screen bg-background">
       <main className="mx-auto py-10 px-6 max-w-7xl">

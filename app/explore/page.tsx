@@ -34,7 +34,7 @@ export default async function DestinationsPage({
         { description: { $regex: searchQuery, $options: "i" } },
         { location: { $regex: searchQuery, $options: "i" } },
         { category: { $regex: searchQuery, $options: "i" } },
-        {image:{}}
+        { image: {} },
       ],
     }).sort({ createdAt: -1 });
   } else {

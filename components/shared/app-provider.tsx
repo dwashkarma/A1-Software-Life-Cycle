@@ -7,7 +7,8 @@ import type { ReactNode } from "react";
 export default function AppProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const authRoutes = ["/authentication/login", "/authentication/register"];
-  const showNavbar = !authRoutes.includes(pathname);
+  const showNavbar =
+    !authRoutes.includes(pathname) && !pathname.startsWith("/admin");
 
   return (
     <>
