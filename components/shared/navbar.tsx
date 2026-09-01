@@ -14,7 +14,7 @@ export default function Navbar() {
         {/* Navigation */}
         <div className=" items-center gap-8 text-sm hidden lg:flex">
           <Link
-            href="/"
+            href="/explore"
             className="text-gray-700 transition hover:text-primary"
           >
             Explore
