@@ -1,27 +1,18 @@
 import Link from "next/link";
+import { connectDB } from "@/lib/mongodb";
+import Destination from "@/models/Destinations";
+import Attraction from "@/models/Attraction";
+import User from "@/models/Users";
 
-const recentAttractions = [
-  {
-    id: "south-bank",
-    name: "South Bank Parklands",
-    destination: "Brisbane",
-    category: "Park",
-  },
-  {
-    id: "story-bridge",
-    name: "Story Bridge",
-    destination: "Brisbane",
-    category: "Landmark",
-  },
-  {
-    id: "lone-pine",
-    name: "Lone Pine Koala Sanctuary",
-    destination: "Brisbane",
-    category: "Wildlife",
-  },
-];
-
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  await connectDB();
+  const destinationCount = await Destination.countDocuments();
+  const attractionCount = await Attraction.countDocuments();
+  const userCount = await User.countDocuments();
+  const recentAttractions = await Attraction.find()
+    .populate("destination")
+    .limit(3)
+    .sort({ createdAt: -1 });
   return (
     <div className="min-h-screen bg-[#F6F8F9] w-full">
       <main className="mx-auto max-w-7xl px-6 py-12">
@@ -41,19 +32,25 @@ export default function AdminDashboardPage() {
           <div className="rounded-xl border border-[#D4D9DE] bg-white p-6">
             <p className="text-sm text-[#636E75]">Destinations</p>
 
-            <p className="mt-3 text-3xl font-bold text-[#1A1F24]">3</p>
+            <p className="mt-3 text-3xl font-bold text-[#1A1F24]">
+              {destinationCount}
+            </p>
           </div>
 
           <div className="rounded-xl border border-[#D4D9DE] bg-white p-6">
             <p className="text-sm text-[#636E75]">Attractions</p>
 
-            <p className="mt-3 text-3xl font-bold text-[#1A1F24]">5</p>
+            <p className="mt-3 text-3xl font-bold text-[#1A1F24]">
+              {attractionCount}
+            </p>
           </div>
 
           <div className="rounded-xl border border-[#D4D9DE] bg-white p-6">
             <p className="text-sm text-[#636E75]">Users</p>
 
-            <p className="mt-3 text-3xl font-bold text-[#1A1F24]">12</p>
+            <p className="mt-3 text-3xl font-bold text-[#1A1F24]">
+              {userCount}
+            </p>
           </div>
         </section>
 
@@ -91,22 +88,35 @@ export default function AdminDashboardPage() {
           </h2>
 
           <div className="mt-5 overflow-hidden rounded-xl border border-[#D4D9DE] bg-white">
-            {recentAttractions.map((attraction) => (
-              <div
-                key={attraction.id}
-                className="grid gap-3 border-b border-[#E5E8EA] px-6 py-5 last:border-b-0 md:grid-cols-3"
-              >
-                <p className="font-semibold text-[#1A1F24]">
-                  {attraction.name}
-                </p>
-
-                <p className="text-sm text-[#636E75]">
-                  {attraction.destination}
-                </p>
-
-                <p className="text-sm text-[#636E75]">{attraction.category}</p>
+            {recentAttractions.length === 0 ? (
+              <div className="px-6 py-8 text-center text-sm text-[#636E75]">
+                No attractions yet. Create your first attraction to get started.
               </div>
-            ))}
+            ) : (
+              recentAttractions.map((attraction: any) => {
+                const destinationName =
+                  attraction.destination &&
+                  typeof attraction.destination === "object"
+                    ? attraction.destination.name
+                    : "Unknown";
+                return (
+                  <div
+                    key={attraction._id.toString()}
+                    className="grid gap-3 border-b border-[#E5E8EA] px-6 py-5 last:border-b-0 md:grid-cols-3"
+                  >
+                    <p className="font-semibold text-[#1A1F24]">
+                      {attraction.name}
+                    </p>
+
+                    <p className="text-sm text-[#636E75]">{destinationName}</p>
+
+                    <p className="text-sm text-[#636E75]">
+                      {attraction.category}
+                    </p>
+                  </div>
+                );
+              })
+            )}
           </div>
         </section>
       </main>

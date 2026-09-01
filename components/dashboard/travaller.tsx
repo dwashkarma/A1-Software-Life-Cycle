@@ -37,34 +37,6 @@ export default function DashboardPage() {
           </p>
         </section>
 
-        {/* Search */}
-        <section className="mt-8">
-          <div className="max-w-2xl">
-            <label
-              htmlFor="search"
-              className="mb-2 block text-sm font-semibold text-gray-800"
-            >
-              Where do you want to explore?
-            </label>
-
-            <div className="flex gap-3">
-              <input
-                id="search"
-                type="text"
-                placeholder="Search destinations..."
-                className="h-12 flex-1 rounded-lg border border-gray-300 bg-white px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-              />
-
-              <button
-                type="button"
-                className="rounded-lg bg-primary px-6 text-sm font-semibold text-white transition hover:bg-[#056b62]"
-              >
-                Search
-              </button>
-            </div>
-          </div>
-        </section>
-
         {/* Your Trips */}
         <section className="mt-12">
           <div className="mb-5 flex items-center justify-between">

@@ -1,10 +1,72 @@
-import React from "react";
+"use client";
+
+import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 function RegisterComponent() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    role: "traveller",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError("");
+
+    if (!formData.name || !formData.email || !formData.password) {
+      setError("Please complete all fields.");
+      return;
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Signup failed");
+      }
+
+      router.push("/authentication/login");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Signup failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-gray-50 lg:flex">
-      {/* LEFT SIDE */}
       <section className="relative hidden min-h-screen w-[50%] overflow-hidden bg-primary p-14 text-white lg:block">
         <h1 className="text-4xl uppercase font-bold tracking-wide text-orange">
           TRAVEL MATE
@@ -24,11 +86,9 @@ function RegisterComponent() {
         </div>
       </section>
 
-      {/* RIGHT SIDE */}
       <section className="flex min-h-screen flex-1 items-center justify-center px-6 py-12">
-        <div className="w-full  rounded-2xl border border-gray-200 bg-white p-14 shadow-sm grid gap-6">
-          {/* Mobile Logo */}
-          <h1 className=" text-xl text-center font-bold text-primary lg:hidden">
+        <div className="w-full rounded-2xl border border-gray-200 bg-white p-14 shadow-sm grid gap-6">
+          <h1 className="text-xl text-center font-bold text-primary lg:hidden">
             TRAVELMATE
           </h1>
           <hr className="lg:hidden" />
@@ -37,8 +97,7 @@ function RegisterComponent() {
             Create your account
           </h2>
 
-          <form className=" space-y-5">
-            {/* Full Name */}
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="name"
@@ -52,11 +111,12 @@ function RegisterComponent() {
                 name="name"
                 type="text"
                 placeholder="Your name"
+                value={formData.name}
+                onChange={handleChange}
                 className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
-            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -70,11 +130,12 @@ function RegisterComponent() {
                 name="email"
                 type="email"
                 placeholder="you@example.com"
+                value={formData.email}
+                onChange={handleChange}
                 className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
-            {/* Password */}
             <div>
               <label
                 htmlFor="password"
@@ -88,11 +149,12 @@ function RegisterComponent() {
                 name="password"
                 type="password"
                 placeholder="Create password"
+                value={formData.password}
+                onChange={handleChange}
                 className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label
                 htmlFor="confirmPassword"
@@ -106,11 +168,12 @@ function RegisterComponent() {
                 name="confirmPassword"
                 type="password"
                 placeholder="Repeat password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 className="h-11 w-full rounded-lg border border-gray-300 px-4 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
               />
             </div>
 
-            {/* Role Selection */}
             <fieldset>
               <legend className="mb-2 block text-sm font-semibold text-gray-800">
                 Choose your role
@@ -121,8 +184,9 @@ function RegisterComponent() {
                   <input
                     type="radio"
                     name="role"
-                    value="administrator"
-                    defaultChecked
+                    value="admin"
+                    checked={formData.role === "admin"}
+                    onChange={handleChange}
                     className="h-4 w-4 accent-primary"
                   />
                   Administrator
@@ -133,6 +197,8 @@ function RegisterComponent() {
                     type="radio"
                     name="role"
                     value="traveller"
+                    checked={formData.role === "traveller"}
+                    onChange={handleChange}
                     className="h-4 w-4 accent-primary"
                   />
                   Traveller
@@ -140,16 +206,17 @@ function RegisterComponent() {
               </div>
             </fieldset>
 
-            {/* Create Account */}
+            {error ? <p className="text-sm text-red-600">{error}</p> : null}
+
             <button
               type="submit"
-              className="h-11 w-full rounded-lg bg-[#078579] text-sm font-semibold text-white transition hover:bg-primary"
+              disabled={loading}
+              className="h-11 w-full rounded-lg bg-[#078579] text-sm font-semibold text-white transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 
-          {/* Login Link */}
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{" "}
             <Link
