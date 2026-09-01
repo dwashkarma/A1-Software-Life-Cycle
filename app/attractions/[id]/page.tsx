@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/mongodb";
 import Attraction from "@/models/Attraction";
 import AddToItineraryModal from "@/components/add-to-itinerary-modal";
+import Image from "next/image";
 
 export default async function AttractionDetailsPage({
   params,
@@ -26,13 +27,22 @@ export default async function AttractionDetailsPage({
     .limit(3)
     .sort({ createdAt: -1 });
 
+  console.log(attraction);
   return (
     <div className="min-h-screen bg-background">
       <main className="px-6 max-w-7xl mx-auto py-10 grid gap-6">
         <section className="flex h-98 w-full items-center justify-center rounded-[14px] bg-[#D6DEE0]">
-          <span className="text-sm font-medium text-[#636E75]">
-            Attraction image
-          </span>
+          {attraction?.image ? (
+            <img
+              src={attraction?.image}
+              alt="Attraction preview"
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <p className="text-[13px] font-semibold text-[#636E75]">
+              Image placeholder
+            </p>
+          )}
         </section>
 
         <section className="gap-6 grid">
@@ -98,7 +108,19 @@ export default async function AttractionDetailsPage({
                   className="flex min-h-20.5 items-center justify-between rounded-xl border border-[#D4D9DE] bg-white p-3"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="h-14.5 w-14.5 shrink-0 rounded-lg bg-[#D6DEE0]" />
+                    {item?.image ? (
+                      <Image
+                        src={item?.image}
+                        alt={item?.name}
+                        className="h-15 w-15 object-cover overflow-clip rounded-xl"
+                        height={10}
+                        width={10}
+                      />
+                    ) : (
+                      <p className="text-[13px] font-semibold text-[#636E75]">
+                        Image placeholder
+                      </p>
+                    )}
 
                     <div>
                       <h3 className="text-sm font-semibold text-[#1A1F24]">

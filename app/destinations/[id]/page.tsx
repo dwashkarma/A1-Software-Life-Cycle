@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { connectDB } from "@/lib/mongodb";
 import Attraction from "@/models/Attraction";
 import Destination from "@/models/Destinations";
+import Image from "next/image";
 
 export default async function DestinationDetailsPage({
   params,
@@ -26,10 +27,20 @@ export default async function DestinationDetailsPage({
   return (
     <div className="min-h-screen bg-[#F6F8F9]">
       <main className="px-6 mx-auto max-w-7xl py-10 grid gap-6">
-        <section className="flex h-98 w-full items-center justify-center rounded-[14px] bg-[#D6DEE0]">
-          <span className="text-sm font-medium text-[#636E75]">
-            {destination.image ? "Destination image" : "Destination image"}
-          </span>
+        <section className="group relative h-98 w-full overflow-hidden rounded-[14px] bg-[#D6DEE0]">
+          {destination?.image ? (
+            <Image
+              src={destination.image}
+              alt={destination.name}
+              fill
+              priority
+              className="object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <p className="text-sm text-[#636E75]">No image available</p>
+            </div>
+          )}
         </section>
 
         <section>
@@ -65,8 +76,17 @@ export default async function DestinationDetailsPage({
                   className="flex min-h-20 items-center justify-between rounded-xl border border-[#D4D9DE] bg-white p-3"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 shrink-0 rounded-lg bg-[#D6DEE0]" />
-
+                    {attraction?.image ? (
+                      <img
+                        src={attraction.image}
+                        alt="Attraction preview"
+                        className="h-15 w-15 object-cover overflow-clip rounded-xl"
+                      />
+                    ) : (
+                      <p className="text-[13px] font-semibold text-[#636E75]">
+                        Image placeholder
+                      </p>
+                    )}
                     <div>
                       <h3 className="text-sm font-semibold text-[#1A1F24]">
                         {attraction.name}

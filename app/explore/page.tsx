@@ -4,6 +4,7 @@ import Destination from "@/models/Destinations";
 import Attraction from "@/models/Attraction";
 import ExploreAttractionCard from "@/components/explore-attraction-card";
 import ExploreSearch from "@/components/explore-search";
+import Image from "next/image";
 
 export default async function DestinationsPage({
   searchParams,
@@ -33,6 +34,7 @@ export default async function DestinationsPage({
         { description: { $regex: searchQuery, $options: "i" } },
         { location: { $regex: searchQuery, $options: "i" } },
         { category: { $regex: searchQuery, $options: "i" } },
+        {image:{}}
       ],
     }).sort({ createdAt: -1 });
   } else {
@@ -92,11 +94,22 @@ export default async function DestinationsPage({
                     key={destination._id.toString()}
                     className="rounded-xl border border-[#D4D9DE] bg-white p-3"
                   >
-                    {/* Image placeholder */}
-                    <div className="flex h-[122px] items-center rounded-[10px] bg-[#D6DEE0] px-4">
-                      <span className="text-xs font-semibold text-[#636E75]">
-                        Destination photo
-                      </span>
+                    <div className="group flex h-[122px] overflow-hidden items-center rounded-[10px] bg-[#D6DEE0]">
+                      {destination?.image ? (
+                        <Image
+                          src={destination.image}
+                          alt={destination.name}
+                          width={600}
+                          height={300}
+                          className="h-full w-full object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <p className="text-sm text-[#636E75]">
+                            No image available
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="px-1 pt-3">
@@ -155,6 +168,7 @@ export default async function DestinationsPage({
                     attractionName={attraction.name}
                     location={attraction.location}
                     category={attraction.category}
+                    image={attraction.image}
                   />
                 );
               })
