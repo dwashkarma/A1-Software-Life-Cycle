@@ -80,7 +80,9 @@ export default async function AdminAttractionsPage() {
                     <p className="text-sm text-[#636E75]">
                       {attraction.category}
                     </p>
-                    <p> {attraction.status || "N/A"}</p>
+                    <p className="text-sm text-[#636E75]">
+                      {attraction.status || "N/A"}
+                    </p>
 
                     <div className="flex gap-3">
                       <Link
@@ -91,12 +93,7 @@ export default async function AdminAttractionsPage() {
                       </Link>
                       <AttractionLifecycleActions
                         attractionId={attraction._id.toString()}
-                        status={attraction?.status || "DRAFT"}
-                      />
-
-                      <AttractionLifecycleActions
-                        status={attraction.status || "DRAFT"}
-                        attractionId={attraction?._id}
+                        status={attraction?.status}
                       />
 
                       <DeleteAttractionButton

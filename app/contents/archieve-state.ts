@@ -1,12 +1,11 @@
-import type { ContentContext } from "./context";
-import type { ContentStatus } from "./content-state";
+import { type ContentStatus } from "./content-state";
 
 export class ArchivedState implements ContentStatus {
-  publish(content: ContentContext): void {
+  publish(): void {
     throw new Error("Cannot publish an archived content");
   }
 
-  archive(content: ContentContext): void {
+  archive(): void {
     throw new Error("Content is already archived");
   }
 

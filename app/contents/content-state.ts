@@ -7,3 +7,4 @@ export interface ContentStatus {
   archive(content: ContentContext): void;
   getStatus(): ContentState;
 }
+  

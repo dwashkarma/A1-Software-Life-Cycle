@@ -1,5 +1,5 @@
 import type { ContentContext } from "./context";
-import type { ContentStatus } from "./content-state";
+import { type ContentStatus } from "./content-state";
 import { PublishState } from "./publish-state";
 
 export class DraftState implements ContentStatus {
@@ -7,7 +7,7 @@ export class DraftState implements ContentStatus {
     content.setState(new PublishState());
   }
 
-  archive(content: ContentContext): void {
+  archive(): void {
     throw new Error("Cannot archive a draft content");
   }
 

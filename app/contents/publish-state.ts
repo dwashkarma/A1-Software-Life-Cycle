@@ -1,9 +1,9 @@
 import { ArchivedState } from "./archieve-state";
-import type { ContentStatus } from "./content-state";
+import { type ContentStatus } from "./content-state";
 import type { ContentContext } from "./context";
 
 export class PublishState implements ContentStatus {
-  publish(content: ContentContext): void {
+  publish(): void {
     throw new Error("Content is already published");
   }
 

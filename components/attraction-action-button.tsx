@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface Props {
@@ -12,26 +13,33 @@ export default function AttractionLifecycleActions({
   status,
 }: Props) {
   const router = useRouter();
+  const [isUpdating, setIsUpdating] = useState(false);
 
   async function changeLifecycle(action: "publish" | "archive") {
-    const response = await fetch(
-      `/api/admin/attractions/${attractionId}/lifecycle`,
-      {
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/attractions/${attractionId}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ action }),
-      },
-    );
+      });
 
-    if (!response.ok) {
-      const data = await response.json();
-      alert(data.error || "Unable to update attraction");
-      return;
+      const data: { error?: string; message?: string } =
+        await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        alert(data.error || data.message || "Unable to update attraction");
+        return;
+      }
+
+      router.refresh();
+    } catch {
+      alert("Unable to reach the server. Please try again.");
+    } finally {
+      setIsUpdating(false);
     }
-
-    router.refresh();
   }
 
   return (
@@ -40,15 +48,17 @@ export default function AttractionLifecycleActions({
         <button
           className="h-10 rounded-lg border bg-primary px-5 text-sm font-semibold text-white  cursor-pointer disabled:opacity-50"
           onClick={() => changeLifecycle("publish")}
+          disabled={isUpdating}
         >
-          Publish
+          {isUpdating ? "Updating..." : "Publish"}
         </button>
       ) : status === "PUBLISHED" ? (
         <button
           className="h-10 rounded-lg border border-blue-200 px-5 text-sm font-semibold text-blue-600 cursor-pointer hover:bg-blue-50 disabled:opacity-50"
           onClick={() => changeLifecycle("archive")}
+          disabled={isUpdating}
         >
-          Archive
+          {isUpdating ? "Updating..." : "Archive"}
         </button>
       ) : status === "ARCHIVED" ? (
         <span>Archived</span>
