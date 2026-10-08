@@ -15,7 +15,10 @@ export default async function AttractionDetailsPage({
   await connectDB();
   const { id } = await params;
 
-  const attraction = await Attraction.findById(id).populate("destination");
+  const attraction = await Attraction.findOne({
+    _id: id,
+    status: "PUBLISHED",
+  }).populate("destination");
 
   if (!attraction) {
     notFound();
@@ -24,6 +27,7 @@ export default async function AttractionDetailsPage({
   const relatedAttractions = await Attraction.find({
     destination: attraction.destination?._id,
     _id: { $ne: attraction._id },
+    status: "PUBLISHED",
   })
     .limit(3)
     .sort({ createdAt: -1 });

@@ -23,6 +23,7 @@ export default async function AdminAttractionsPage() {
     .populate({ path: "destination", model: Destination })
     .sort({ createdAt: -1 });
 
+  console.log(attractions);
   return (
     <div className="flex min-h-screen bg-[#F6F8F9] w-full">
       <main className="flex-1 px-12 py-12">
@@ -79,7 +80,9 @@ export default async function AdminAttractionsPage() {
                     <p className="text-sm text-[#636E75]">
                       {attraction.category}
                     </p>
-                    <p> {attraction.status || "N/A"}</p>
+                    <p className="text-sm text-[#636E75]">
+                      {attraction.status || "N/A"}
+                    </p>
 
                     <div className="flex gap-3">
                       <Link
@@ -90,7 +93,7 @@ export default async function AdminAttractionsPage() {
                       </Link>
                       <AttractionLifecycleActions
                         attractionId={attraction._id.toString()}
-                        status={attraction?.status || "DRAFT"}
+                        status={attraction?.status}
                       />
 
                       <DeleteAttractionButton

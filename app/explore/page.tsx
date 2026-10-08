@@ -6,6 +6,10 @@ import ExploreAttractionCard from "@/components/explore-attraction-card";
 import ExploreSearch from "@/components/explore-search";
 import Image from "next/image";
 
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 export default async function DestinationsPage({
   searchParams,
 }: {
@@ -19,27 +23,40 @@ export default async function DestinationsPage({
   let attractions;
 
   if (searchQuery) {
-    // Search both destinations and attractions by name, description, location, etc.
+    const searchRegex = escapeRegex(searchQuery);
+
     destinations = await Destination.find({
+      status: "PUBLISHED",
       $or: [
-        { name: { $regex: searchQuery, $options: "i" } },
-        { description: { $regex: searchQuery, $options: "i" } },
-        { state: { $regex: searchQuery, $options: "i" } },
+        { name: { $regex: searchRegex, $options: "i" } },
+        { description: { $regex: searchRegex, $options: "i" } },
+        { state: { $regex: searchRegex, $options: "i" } },
       ],
     }).sort({ createdAt: -1 });
 
     attractions = await Attraction.find({
+      status: "PUBLISHED",
       $or: [
-        { name: { $regex: searchQuery, $options: "i" } },
-        { description: { $regex: searchQuery, $options: "i" } },
-        { location: { $regex: searchQuery, $options: "i" } },
-        { category: { $regex: searchQuery, $options: "i" } },
-        { image: {} },
+        { name: { $regex: searchRegex, $options: "i" } },
+        { description: { $regex: searchRegex, $options: "i" } },
+        { location: { $regex: searchRegex, $options: "i" } },
+        { category: { $regex: searchRegex, $options: "i" } },
+        {
+          destination: {
+            $in: destinations.map(
+              (destination: { _id: unknown }) => destination._id,
+            ),
+          },
+        },
       ],
     }).sort({ createdAt: -1 });
   } else {
-    destinations = await Destination.find().sort({ createdAt: -1 });
-    attractions = await Attraction.find().limit(6).sort({ createdAt: -1 });
+    destinations = await Destination.find({ status: "PUBLISHED" }).sort({
+      createdAt: -1,
+    });
+    attractions = await Attraction.find({ status: "PUBLISHED" })
+      .limit(6)
+      .sort({ createdAt: -1 });
   }
 
   return (

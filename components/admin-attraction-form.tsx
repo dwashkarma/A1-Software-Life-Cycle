@@ -49,7 +49,7 @@ export default function AttractionForm({
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
-        const response = await fetch("/api/destinations");
+        const response = await fetch("/api/destinations?status=PUBLISHED");
         if (response.ok) {
           const data = await response.json();
           setDestinations(data.destinations || data);
@@ -202,20 +202,46 @@ export default function AttractionForm({
                     Destination
                   </label>
 
-                  <select
-                    id="destination"
-                    name="destination"
-                    value={formData.destination}
-                    onChange={handleChange}
-                    className="h-11 w-full rounded-lg border border-[#D4D9DE] bg-white px-4 text-[13px] text-[#636E75] outline-none focus:border-[#0A786E]"
-                  >
-                    <option value="">Select a destination...</option>
-                    {destinations.map((dest) => (
-                      <option key={dest._id} value={dest._id}>
-                        {dest.name}
+                  <div className="relative">
+                    <select
+                      id="destination"
+                      name="destination"
+                      value={formData.destination}
+                      onChange={handleChange}
+                      required
+                      className="h-12 w-full appearance-none rounded-xl border border-[#D4D9DE] bg-gradient-to-b from-white to-[#F9FBFB] py-2 pl-4 pr-11 text-sm font-medium text-[#1A1F24] shadow-sm outline-none transition hover:border-[#9CBDB8] "
+                    >
+                      <option value="" disabled>
+                        {destinations.length
+                          ? "Choose a published destination"
+                          : "No published destinations available"}
                       </option>
-                    ))}
-                  </select>
+                      {destinations.map((dest) => (
+                        <option key={dest._id} value={dest._id}>
+                          {dest.name}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#0A786E]">
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        className="h-5 w-5"
+                      >
+                        <path
+                          d="m5 7.5 5 5 5-5"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs text-[#7A858B]">
+                    Choose where this attraction is located.
+                  </p>
                 </div>
 
                 <div>
@@ -226,20 +252,38 @@ export default function AttractionForm({
                     Category
                   </label>
 
-                  <select
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="h-11 w-full rounded-lg border border-[#D4D9DE] bg-white px-4 text-[13px] text-[#636E75] outline-none focus:border-[#0A786E]"
-                  >
-                    <option value="">Select a category...</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleChange}
+                      className="h-12 w-full appearance-none rounded-xl border border-[#D4D9DE] bg-gradient-to-b from-white to-[#F9FBFB] py-2 pl-4 pr-11 text-sm font-medium text-[#1A1F24] shadow-sm outline-none transition hover:border-[#9CBDB8]  "
+                    >
+                      <option value="">Select a category...</option>
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-[#0A786E]">
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        className="h-5 w-5"
+                      >
+                        <path
+                          d="m5 7.5 5 5 5-5"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </div>
                 </div>
               </div>
 
