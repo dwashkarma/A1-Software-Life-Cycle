@@ -49,7 +49,7 @@ export default function AttractionForm({
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
-        const response = await fetch("/api/destinations");
+        const response = await fetch("/api/destinations?status=PUBLISHED");
         if (response.ok) {
           const data = await response.json();
           setDestinations(data.destinations || data);
