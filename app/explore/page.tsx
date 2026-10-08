@@ -26,6 +26,7 @@ export default async function DestinationsPage({
     const searchRegex = escapeRegex(searchQuery);
 
     destinations = await Destination.find({
+      status: "PUBLISHED",
       $or: [
         { name: { $regex: searchRegex, $options: "i" } },
         { description: { $regex: searchRegex, $options: "i" } },
@@ -34,6 +35,7 @@ export default async function DestinationsPage({
     }).sort({ createdAt: -1 });
 
     attractions = await Attraction.find({
+      status: "PUBLISHED",
       $or: [
         { name: { $regex: searchRegex, $options: "i" } },
         { description: { $regex: searchRegex, $options: "i" } },
@@ -49,8 +51,12 @@ export default async function DestinationsPage({
       ],
     }).sort({ createdAt: -1 });
   } else {
-    destinations = await Destination.find().sort({ createdAt: -1 });
-    attractions = await Attraction.find().limit(6).sort({ createdAt: -1 });
+    destinations = await Destination.find({ status: "PUBLISHED" }).sort({
+      createdAt: -1,
+    });
+    attractions = await Attraction.find({ status: "PUBLISHED" })
+      .limit(6)
+      .sort({ createdAt: -1 });
   }
 
   return (
