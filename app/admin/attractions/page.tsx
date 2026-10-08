@@ -7,6 +7,7 @@ import { connectDB } from "@/lib/mongodb";
 import Attraction from "@/models/Attraction";
 import DeleteAttractionButton from "@/components/admin-delete-button";
 import AttractionLifecycleActions from "@/components/attraction-action-button";
+import Destination from "@/models/Destinations";
 
 export default async function AdminAttractionsPage() {
   await connectDB();
@@ -19,7 +20,7 @@ export default async function AdminAttractionsPage() {
   }
 
   const attractions = await Attraction.find()
-    .populate("destination")
+    .populate({ path: "destination", model: Destination })
     .sort({ createdAt: -1 });
 
   console.log(attractions);
@@ -79,7 +80,7 @@ export default async function AdminAttractionsPage() {
                     <p className="text-sm text-[#636E75]">
                       {attraction.category}
                     </p>
-                    {attraction.status || "null"}
+                    <p> {attraction.status || "N/A"}</p>
 
                     <div className="flex gap-3">
                       <Link
@@ -88,6 +89,10 @@ export default async function AdminAttractionsPage() {
                       >
                         Edit
                       </Link>
+                      <AttractionLifecycleActions
+                        attractionId={attraction._id.toString()}
+                        status={attraction?.status || "DRAFT"}
+                      />
 
                       <AttractionLifecycleActions
                         status={attraction.status || "DRAFT"}
