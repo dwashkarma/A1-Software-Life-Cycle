@@ -8,6 +8,7 @@ type Destination = {
   state: string;
   description?: string;
   image?: string;
+  status?: "DRAFT" | "PUBLISHED" | "ARCHIVED";
 };
 
 function DestinationPage() {
@@ -17,6 +18,12 @@ function DestinationPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [formError, setFormError] = useState("");
+  const [updatingDestinationId, setUpdatingDestinationId] = useState<
+    string | null
+  >(null);
+  const [deletingDestinationId, setDeletingDestinationId] = useState<
+    string | null
+  >(null);
   const [formData, setFormData] = useState({
     name: "",
     state: "",
@@ -119,6 +126,68 @@ function DestinationPage() {
       );
     } finally {
       setIsSaving(false);
+    }
+  }
+
+  async function handleStatusChange(
+    destinationId: string,
+    status: "PUBLISHED" | "ARCHIVED",
+  ) {
+    setUpdatingDestinationId(destinationId);
+    try {
+      const response = await fetch(
+        `/api/destinations/${destinationId}/status`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        },
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to update destination status.");
+      }
+
+      setDestinations((current) =>
+        current.map((destination) =>
+          destination._id === destinationId
+            ? { ...destination, status: data.status }
+            : destination,
+        ),
+      );
+    } catch (err) {
+      window.alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to update destination status.",
+      );
+    } finally {
+      setUpdatingDestinationId(null);
+    }
+  }
+
+  async function handleDeleteDestination(destination: Destination) {
+    if (!window.confirm(`Delete destination "${destination.name}"?`)) return;
+
+    setDeletingDestinationId(destination._id);
+    try {
+      const response = await fetch(`/api/destinations/${destination._id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete destination.");
+      }
+
+      setDestinations((current) =>
+        current.filter((item) => item._id !== destination._id),
+      );
+    } catch (err) {
+      window.alert(
+        err instanceof Error ? err.message : "Failed to delete destination.",
+      );
+    } finally {
+      setDeletingDestinationId(null);
     }
   }
 
@@ -277,6 +346,69 @@ function DestinationPage() {
                       {destination.description}
                     </p>
                   )}
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <span className="text-sm text-[#636E75]">
+                      Status: {destination.status || "DRAFT"}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {(destination.status || "DRAFT") !== "ARCHIVED" && (
+                        <select
+                          aria-label={`Change status for ${destination.name}`}
+                          value=""
+                          disabled={updatingDestinationId === destination._id}
+                          onChange={(event) => {
+                            if (
+                              event.target.value === "PUBLISHED" ||
+                              event.target.value === "ARCHIVED"
+                            ) {
+                              void handleStatusChange(
+                                destination._id,
+                                event.target.value,
+                              );
+                            }
+                          }}
+                          className="rounded border border-[#D4D9DE] bg-white px-3 py-2 text-sm disabled:opacity-60"
+                        >
+                          <option value="" disabled>
+                            {updatingDestinationId === destination._id
+                              ? "Updating..."
+                              : "Change status"}
+                          </option>
+                          {(destination.status || "DRAFT") === "DRAFT" && (
+                            <option value="PUBLISHED">Publish</option>
+                          )}
+                          <option value="ARCHIVED">Archive</option>
+                        </select>
+                      )}
+                      <button
+                        type="button"
+                        aria-label={`Delete ${destination.name}`}
+                        title="Delete destination"
+                        disabled={deletingDestinationId === destination._id}
+                        onClick={() => void handleDeleteDestination(destination)}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {deletingDestinationId === destination._id ? (
+                          <span className="text-xs">...</span>
+                        ) : (
+                          <svg
+                            aria-hidden="true"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.8"
+                            className="h-4 w-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M3 6h18m-2 0-1 14H6L5 6m4 0V4h6v2m-5 4v6m4-6v6"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </article>
               ))}
             </div>
