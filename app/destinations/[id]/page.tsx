@@ -22,6 +22,7 @@ export default async function DestinationDetailsPage({
 
   const attractions = await Attraction.find({
     destination: destination._id,
+    status: "PUBLISHED",
   }).sort({ createdAt: -1 });
 
   return (
