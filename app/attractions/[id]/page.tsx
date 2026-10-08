@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/mongodb";
 import Attraction from "@/models/Attraction";
 import AddToItineraryModal from "@/components/add-to-itinerary-modal";
 import Image from "next/image";
+import WeatherCard from "@/components/weather-card";
 
 export default async function AttractionDetailsPage({
   params,
@@ -90,6 +91,12 @@ export default async function AttractionDetailsPage({
             </div>
           </div>
         </section>
+        {/* Weather information */}
+          {attraction.destination?.name && (
+            <div className="max-w-190">
+              <WeatherCard destination={attraction.destination.name} />
+            </div>
+          )}
 
         <section className="grid gap-4">
           <h2 className="text-xl font-semibold text-[#1A1F24]">
