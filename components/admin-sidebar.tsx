@@ -42,6 +42,16 @@ export default function AdminSideBar() {
           Dashboard
         </Link>
         <Link
+          href="/admin/destinations"
+          className={
+            IsActive("/admin/destinations")
+              ? "flex h-11 items-center rounded-lg bg-[#E3F5F2] px-5 font-semibold text-[#0A786E]"
+              : "flex h-11 items-center rounded-lg px-5 text-left text-slate-200 hover:text-[#0A786E]"
+          }
+        >
+          Destinations
+        </Link>
+        <Link
           href="/admin/attractions"
           className={
             IsActive("/admin/attractions")
