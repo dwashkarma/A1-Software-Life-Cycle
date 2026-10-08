@@ -6,6 +6,7 @@ import { decodeSession } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import Attraction from "@/models/Attraction";
 import DeleteAttractionButton from "@/components/admin-delete-button";
+import AttractionLifecycleActions from "@/components/attraction-action-button";
 
 export default async function AdminAttractionsPage() {
   await connectDB();
@@ -21,6 +22,7 @@ export default async function AdminAttractionsPage() {
     .populate("destination")
     .sort({ createdAt: -1 });
 
+  console.log(attractions);
   return (
     <div className="flex min-h-screen bg-[#F6F8F9] w-full">
       <main className="flex-1 px-12 py-12">
@@ -48,10 +50,11 @@ export default async function AdminAttractionsPage() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-[2fr_1fr_1fr_1fr] border-b border-[#D4D9DE] bg-[#F6F8F9] px-6 py-4 text-sm font-semibold text-[#636E75]">
+              <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1.5fr] border-b border-[#D4D9DE] bg-[#F6F8F9] px-6 py-4 text-sm font-semibold text-[#636E75]">
                 <span>Attraction</span>
                 <span>Destination</span>
                 <span>Category</span>
+                <span>Status</span>
                 <span>Actions</span>
               </div>
 
@@ -65,7 +68,7 @@ export default async function AdminAttractionsPage() {
                 return (
                   <div
                     key={attraction._id.toString()}
-                    className="grid grid-cols-[2fr_1fr_1fr_1fr] items-center border-b border-[#E5E8EA] px-6 py-5 last:border-b-0"
+                    className="grid grid-cols-[2fr_1fr_1fr_1fr_1.5fr] items-center border-b border-[#E5E8EA] px-6 py-5 last:border-b-0"
                   >
                     <p className="font-semibold text-[#1A1F24]">
                       {attraction.name}
@@ -76,6 +79,7 @@ export default async function AdminAttractionsPage() {
                     <p className="text-sm text-[#636E75]">
                       {attraction.category}
                     </p>
+                    {attraction.status || "null"}
 
                     <div className="flex gap-3">
                       <Link
@@ -84,6 +88,11 @@ export default async function AdminAttractionsPage() {
                       >
                         Edit
                       </Link>
+
+                      <AttractionLifecycleActions
+                        status={attraction.status || "DRAFT"}
+                        attractionId={attraction?._id}
+                      />
 
                       <DeleteAttractionButton
                         attractionId={attraction._id.toString()}

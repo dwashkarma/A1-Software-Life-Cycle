@@ -1,23 +1,25 @@
-import { ContentState } from "./content-state";
+import type { ContentState, ContentStatus } from "./content-state";
 
 export class ContentContext {
-  private contentState: ContentState;
+  private contentStatus: ContentStatus;
 
-  constructor(state: ContentState) {
-    this.contentState = state;
-  }
-
-  setContentState(state: ContentState) {
-    this.contentState = state;
+  constructor(state: ContentStatus) {
+    this.contentStatus = state;
   }
 
-  publishContent() {
-    this.contentState.publish(this);
+  setState(state: ContentStatus) {
+    this.contentStatus = state;
   }
-  archiveContent() {
-    this.contentState.archive(this);
+
+  publish(): void {
+    this.contentStatus.publish(this);
   }
-  getStatus() {
-    return this.contentState.getStatus();
+
+  archive(): void {
+    this.contentStatus.archive(this);
+  }
+
+  getStatus(): ContentState {
+    return this.contentStatus.getStatus();
   }
 }
