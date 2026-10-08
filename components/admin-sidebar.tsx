@@ -17,7 +17,7 @@ export default function AdminSideBar() {
     } catch {
       // Continue to login even if the logout request fails.
     }
-    router.push("/login");
+    router.push("/authentication/login");
   };
   return (
     <aside className="w-[238px] border-r border-[#D4D9DE] bg-primary px-5 py-6">
