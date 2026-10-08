@@ -23,6 +23,11 @@ const DestinationSchema = new Schema(
       type: String,
       default: "",
     },
+    status: {
+      type: String,
+      enum: ["DRAFT", "PUBLISHED", "ARCHIVED"],
+      default: "DRAFT",
+    },
   },
   {
     timestamps: true,
