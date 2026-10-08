@@ -1,14 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-
+import { usePathname, useRouter } from "next/navigation";
 export default function AdminSideBar() {
   const pathname = usePathname();
+  const router = useRouter();
   const IsActive = (path: string) => {
     return pathname === path;
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+    } catch {
+      // Continue to login even if the logout request fails.
+    }
+    router.push("/login");
+  };
   return (
     <aside className="w-[238px] border-r border-[#D4D9DE] bg-primary px-5 py-6">
       <Link
@@ -44,7 +54,8 @@ export default function AdminSideBar() {
 
         <button
           type="button"
-          className="flex h-11 w-full items-center rounded-lg px-5 text-left text-slate-200 hover:text-[#0A786E]"
+          onClick={handleLogout}
+          className=" hover:cursor-pointer flex h-11 w-full items-center rounded-lg px-5 text-left text-slate-200 hover:text-[#0A786E]"
         >
           Logout
         </button>
