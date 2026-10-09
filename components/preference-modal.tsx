@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CheckboxGroup, { CheckboxOption } from "@/components/checkbox-group";
 
+type Selection = { destinations: string[]; categories: string[] };
+
 /**
  * Popup that asks a logged-in traveller for destination and category preferences.
  * It shows nothing to visitors who are not logged in.
@@ -19,55 +21,66 @@ export default function PreferenceModal() {
     const [firstTime, setFirstTime] = useState(false); // true until saved or skipped
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState<Selection>({ destinations: [], categories: [] });
 
     useEffect(() => {
-    const load = async () => {
-        try {
-            const res = await fetch("/api/preferences");
-            if (!res.ok) return; // 401: not logged in, so nothing is shown
-            setLoggedIn(true);
+        const load = async () => {
+            try {
+                const res = await fetch("/api/preferences");
+                if (!res.ok) return; // 401: not logged in, so nothing is shown
+                setLoggedIn(true);
 
-            const data = await res.json();
-            const preference = data.preference;
+                const data = await res.json();
+                const preference = data.preference;
 
-            // Open for a traveller who has neither saved nor skipped yet.
-            if (!preference || !preference.completed) {
-                setFirstTime(true);
-                setOpen(true);
+                if (preference) {
+                    const selection: Selection = {
+                        destinations: (preference.destinations ?? []).map(String),
+                        categories: preference.categories ?? [],
+                    };
+                    setSaved(selection);
+                    setSelectedDestinations(selection.destinations);
+                    setSelectedCategories(selection.categories);
+                }
+
+                // Open for a traveller who has neither saved nor skipped yet.
+                if (!preference || !preference.completed) {
+                    setFirstTime(true);
+                    setOpen(true);
+                }
+
+                const [destinationsRes, categoriesRes] = await Promise.all([
+                    fetch("/api/destinations"),
+                    fetch("/api/attractions/categories"),
+                ]);
+
+                if (destinationsRes.ok) {
+                    const destinations = await destinationsRes.json();
+                    setDestinationOptions(
+                        destinations.map((d: { _id: string; name: string; state?: string }) => ({
+                            value: String(d._id),
+                            label: d.state ? `${d.name} (${d.state})` : d.name,
+                        })),
+                    );
+                }
+
+                if (categoriesRes.ok) {
+                    const categoriesData = await categoriesRes.json();
+                    setCategoryOptions(
+                        (categoriesData.categories ?? []).map((c: string) => ({
+                            value: c,
+                            label: c,
+                        })),
+                    );
+                }
+
+                if (!destinationsRes.ok || !categoriesRes.ok) {
+                    setError("Failed to load destinations or categories");
+                }
+            } catch (err) {
+                console.error("Failed to load preferences:", err);
+                setError("Failed to load your preferences");
             }
-
-            const [destinationsRes, categoriesRes] = await Promise.all([
-                fetch("/api/destinations"),
-                fetch("/api/attractions/categories"),
-            ]);
-
-            if (destinationsRes.ok) {
-                const destinations = await destinationsRes.json();
-                setDestinationOptions(
-                    destinations.map((d: { _id: string; name: string; state?: string }) => ({
-                        value: String(d._id),
-                        label: d.state ? `${d.name} (${d.state})` : d.name,
-                    })),
-                );
-            }
-
-            if (categoriesRes.ok) {
-                const categoriesData = await categoriesRes.json();
-                setCategoryOptions(
-                    (categoriesData.categories ?? []).map((c: string) => ({
-                        value: c,
-                        label: c,
-                    })),
-                );
-            }
-
-            if (!destinationsRes.ok || !categoriesRes.ok) {
-                setError("Failed to load destinations or categories");
-            }
-        } catch (err) {
-            console.error("Failed to load preferences:", err);
-            setError("Failed to load your preferences");
-        }
         };
 
         load();
@@ -97,6 +110,7 @@ export default function PreferenceModal() {
                 destinations: selectedDestinations,
                 categories: selectedCategories,
             });
+            setSaved({ destinations: selectedDestinations, categories: selectedCategories });
             setFirstTime(false);
             setOpen(false);
             router.refresh(); // re-render the recommendations without a manual refresh
@@ -129,10 +143,29 @@ export default function PreferenceModal() {
         }
     };
 
+    // Reopen the popup with the saved choices ticked, dropping any unsaved changes.
+    const openEditor = () => {
+        setSelectedDestinations(saved.destinations);
+        setSelectedCategories(saved.categories);
+        setError(null);
+        setFirstTime(false);
+        setOpen(true);
+    };
+
     if (!loggedIn) return null;
 
     return (
         <>
+            {!open && (
+                <button
+                type="button"
+                onClick={openEditor}
+                className="justify-self-start text-sm font-semibold text-[#0A786E] hover:underline"
+                >
+                    Edit travel preferences
+                </button>
+            )}
+
             {open && (
                 <div
                     role="dialog"
