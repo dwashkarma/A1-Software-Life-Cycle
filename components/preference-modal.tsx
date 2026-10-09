@@ -57,7 +57,10 @@ export default function PreferenceModal() {
                 if (destinationsRes.ok) {
                     const destinations = await destinationsRes.json();
                     setDestinationOptions(
-                        destinations.map((d: { _id: string; name: string; state?: string }) => ({
+                        destinations
+                        // Only published destinations can be chosen (the server checks this too).
+                        .filter((d: { status?: string }) => !d.status || d.status === "PUBLISHED")
+                        .map((d: { _id: string; name: string; state?: string }) => ({
                             value: String(d._id),
                             label: d.state ? `${d.name} (${d.state})` : d.name,
                         })),
@@ -100,7 +103,7 @@ export default function PreferenceModal() {
         // Validation happens here, before any request is sent.
         if (selectedDestinations.length === 0 && selectedCategories.length === 0) {
             setError("Select at least one destination or category");
-        return;
+            return;
         }
 
         setSaving(true);
@@ -207,8 +210,8 @@ export default function PreferenceModal() {
                                 options={categoryOptions}
                                 selected={selectedCategories}
                                 onChange={(values) => {
-                                    setSelectedCategories(values);
-                                    setError(null);
+                                setSelectedCategories(values);
+                                setError(null);
                                 }}
                                 emptyMessage="No categories available yet."
                             />
