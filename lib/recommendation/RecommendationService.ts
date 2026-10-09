@@ -20,7 +20,7 @@ export class RecommendationService
 
     /** === Attraction ranking === 
      * Scores every attraction, drops the ones that match nothing and sorts the rest
-     * Only strategys the traveller selected a value for are applied
+     * Only strategies the traveller preferences are applied
      * Score = average of the applied strategies, so a double match (1) ranks above a single match (0.5)**/
     rank( attractions: AttractionData[], preference: TravelPreference,): RecommendedAttraction[]
     {
@@ -72,5 +72,53 @@ export class RecommendationService
         });
 
         return result;
+    }
+
+    rankDestinations(ranked: RecommendedAttraction[]): RecommendedDestination[]
+    {
+        const results: RecommendedDestination[] = [];
+
+        // Group attractions by destination
+        for (const item of ranked)
+        {
+            const id = item.attraction.destinationId;
+
+            let destination = results.find((result) => result.destinationId === id);
+
+            // Create a destination if it does not exist
+            if (destination === undefined)
+            {
+                destination = {
+                    destinationId: id,
+                    score: 0,
+                    matchedCount: 0,
+                };
+
+                results.push(destination);
+            }
+
+            // Update destination statistics
+            destination.score = round2(destination.score + item.score);
+
+            destination.matchedCount += 1;
+        }
+
+        // Sort destinations
+        results.sort((a, b) => {
+            if (a.score !== b.score)
+            {
+                return b.score - a.score;
+            }
+
+            if (a.matchedCount !== b.matchedCount)
+            {
+                return b.matchedCount - a.matchedCount;
+            }
+
+            // if both are equal, sort by destination ID
+            return a.destinationId.localeCompare(b.destinationId);
+        });
+
+        return results;
     }
 }
