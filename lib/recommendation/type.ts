@@ -19,7 +19,7 @@ export interface RecommendedAttraction {
 export interface RecommendedDestination {
     destinationId: string;
     /** Sum of scores of its matching attractions **/
-    scores: number;
+    score: number;
     /** How many attractions of this destination matched **/
     matchedCount: number;
 }
