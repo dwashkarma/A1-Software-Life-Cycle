@@ -22,7 +22,7 @@ const unauthorized = () =>
     );
 
 const badRequest = (message: string) =>
-    NextResponse.json({success: false, message}, {status: 400});
+    NextResponse.json({ success: false, message }, { status: 400 });
 
 // Read the logged-in user's saved preference.
 export async function GET(request: NextRequest) {
@@ -53,19 +53,16 @@ export async function PUT(request: NextRequest) {
         if (!userId) return unauthorized();
 
         const body = await request.json().catch(() => null);
-        if (!body || typeof body !== "object") 
-        {
+        if (!body || typeof body !== "object") {
             return badRequest("Invalid request body");
         }
 
-        // Skip: mark the setup as completed. Nothing else is stored, and an
-        // existing preference is left untouched.
-        if (body.skip === true) 
-        {
+        // Skip: mark the setup as completed. Nothing else is stored, and an existing preference is left untouched.
+        if (body.skip === true) {
             const skipped = await UserPreference.findOneAndUpdate(
                 { user: userId },
                 { completed: true },
-                { upsert: true, new: true },
+                { upsert: true, returnDocument: "after" },
         );
         return NextResponse.json({
             success: true,
@@ -81,7 +78,7 @@ export async function PUT(request: NextRequest) {
             !Array.isArray(rawDestinations) ||
             !rawDestinations.every(
                 (id) => typeof id === "string" && mongoose.Types.ObjectId.isValid(id),
-            )
+        )
         ) {
             return badRequest("Invalid destination id");
         }
@@ -100,7 +97,7 @@ export async function PUT(request: NextRequest) {
         } catch (error) {
             return badRequest(
                 error instanceof Error ? error.message : "Invalid preference",
-        );
+            );
         }
 
         // Every selected destination must exist.
@@ -113,9 +110,11 @@ export async function PUT(request: NextRequest) {
         }
 
         // Every selected category must exist in the attraction data.
-        const storedCategories: string[] = await Attraction.distinct("category");
+        const storedCategories: string[] = await Attraction.distinct("category", {
+            status: "PUBLISHED",
+        });
         const unknown = preference.categories.filter(
-            (category) => !storedCategories.includes(category),
+        (category) => !storedCategories.includes(category),
         );
         if (unknown.length > 0) {
             return badRequest(`Unknown category: ${unknown.join(", ")}`);
@@ -123,13 +122,13 @@ export async function PUT(request: NextRequest) {
 
         // One preference per user: create it, or replace the previous one.
         const saved = await UserPreference.findOneAndUpdate(
-        { user: userId },
-        {
-            destinations: destinationIds,
-            categories: [...preference.categories],
-            completed: true,
-        },
-        { upsert: true, new: true, runValidators: true },
+            { user: userId },
+            {
+                destinations: destinationIds,
+                categories: [...preference.categories],
+                completed: true,
+            },
+            { upsert: true, returnDocument: "after", runValidators: true },
         );
 
         return NextResponse.json({
