@@ -70,7 +70,6 @@ export default async function RecommendedSection() {
     const { destinations, attractions } = recommendations;
     const bestMatches = attractions.filter((item) => item.tier === "best");
     const partialMatches = attractions.filter((item) => item.tier === "partial");
-    const hasResults = destinations.length > 0 || attractions.length > 0;
 
     return (
         <section className="grid gap-6">
@@ -83,26 +82,24 @@ export default async function RecommendedSection() {
                 </p>
             </div>
 
-            {!hasResults ? (
+            {destinations.length > 0 && (
+                <div className="grid gap-4">
+                    <h3 className="text-sm font-semibold text-[#636E75]">Destinations</h3>
+                    <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+                        {destinations.map(({ doc }) => (
+                        <DestinationCard key={doc._id.toString()} doc={doc} />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {attractions.length === 0 ? (
                 <div className="rounded-xl border border-[#D4D9DE] bg-white p-8 text-center text-sm text-[#636E75]">
                     No attractions match your preferences yet. Try selecting different
-                destinations or categories.
+                    destinations or categories.
                 </div>
             ) : (
                 <>
-                    {destinations.length > 0 && (
-                        <div className="grid gap-4">
-                            <h3 className="text-sm font-semibold text-[#636E75]">
-                                Destinations
-                            </h3>
-                            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-                                {destinations.map(({ doc }) => (
-                                <DestinationCard key={doc._id.toString()} doc={doc} />
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
                     {bestMatches.length > 0 && (
                         <div className="grid gap-4">
                             <h3 className="text-sm font-semibold text-[#636E75]">
