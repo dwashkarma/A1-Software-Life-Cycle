@@ -31,7 +31,7 @@ const notSet = (): RecommendationResult => ({
 });
 
 /**
- * Connects the database to the recommendation engine.
+ * Connects the database to the recommendation engine (Story 3.1).
  * It only reads the preference that belongs to the given user.
  */
 export async function getRecommendations(
@@ -56,10 +56,22 @@ export async function getRecommendations(
         return notSet();
     }
 
-    // Only published attractions have a details page, so only they are recommended.
-    const docs: any[] = await Attraction.find({ status: "PUBLISHED" })
+    // Only published destinations are shown on the explore page, so only they are recommended.
+    const destinationDocs: any[] = await Destination.find({
+        status: "PUBLISHED",
+    }).lean();
+    const destinationById = new Map(
+        destinationDocs.map((doc) => [String(doc._id), doc]),
+    );
+
+    // Only published attractions have a details page. Attractions that belong to
+    // an unpublished destination are left out as well.
+    const allDocs: any[] = await Attraction.find({ status: "PUBLISHED" })
         .select("name category destination location image")
         .lean();
+    const docs = allDocs.filter((doc) =>
+        destinationById.has(String(doc.destination)),
+    );
 
     const docById = new Map(docs.map((doc) => [String(doc._id), doc]));
     const attractions: AttractionData[] = docs.map((doc) => ({
@@ -71,15 +83,31 @@ export async function getRecommendations(
 
     const service = new RecommendationService();
     const ranked = service.rank(attractions, preference);
-    const topDestinations = service
-        .rankDestinations(ranked)
-        .slice(0, MAX_DESTINATIONS);
+    const rankedDestinations = service.rankDestinations(ranked);
 
-    const destinationDocs: any[] = await Destination.find({
-        _id: { $in: topDestinations.map((d) => d.destinationId) },
-    }).lean();
-    const destinationById = new Map(
-        destinationDocs.map((doc) => [String(doc._id), doc]),
+    // A destination the traveller ticked is always shown, even when none of its
+    // attractions matched (or it has no attractions yet). Destinations found only
+    // through matching attractions come after them.
+    const scoreById = new Map(rankedDestinations.map((d) => [d.destinationId, d]));
+    const chosenDestinations = preference.destinationIds
+        .filter((id) => destinationById.has(id))
+        .map(
+        (id) => scoreById.get(id) ?? { destinationId: id, score: 0, matchedCount: 0 },
+        )
+        .sort(
+        (a, b) =>
+            b.score - a.score ||
+            b.matchedCount - a.matchedCount ||
+            String(destinationById.get(a.destinationId).name).localeCompare(
+            String(destinationById.get(b.destinationId).name),
+            ),
+        );
+    const otherDestinations = rankedDestinations.filter(
+        (d) => !preference.destinationIds.includes(d.destinationId),
+    );
+    const topDestinations = [...chosenDestinations, ...otherDestinations].slice(
+        0,
+        MAX_DESTINATIONS,
     );
 
     return {
