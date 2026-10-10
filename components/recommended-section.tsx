@@ -68,6 +68,9 @@ export default async function RecommendedSection() {
     if (!recommendations.preferenceSet) return null; // no preference or skipped: page as before
 
     const { destinations, attractions } = recommendations;
+    const bestMatches = attractions.filter((item) => item.tier === "best");
+    const partialMatches = attractions.filter((item) => item.tier === "partial");
+    const hasResults = destinations.length > 0 || attractions.length > 0;
 
     return (
         <section className="grid gap-6">
@@ -80,22 +83,44 @@ export default async function RecommendedSection() {
                 </p>
             </div>
 
-            {destinations.length > 0 && (
-            <div className="grid gap-4">
-                <h3 className="text-sm font-semibold text-[#636E75]">Destinations</h3>
-                <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-                {destinations.map(({ doc }) => (
-                    <DestinationCard key={doc._id.toString()} doc={doc} />
-                ))}
+            {!hasResults ? (
+                <div className="rounded-xl border border-[#D4D9DE] bg-white p-8 text-center text-sm text-[#636E75]">
+                    No attractions match your preferences yet. Try selecting different
+                destinations or categories.
                 </div>
-            </div>
-            )}
+            ) : (
+                <>
+                    {destinations.length > 0 && (
+                        <div className="grid gap-4">
+                            <h3 className="text-sm font-semibold text-[#636E75]">
+                                Destinations
+                            </h3>
+                            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+                                {destinations.map(({ doc }) => (
+                                <DestinationCard key={doc._id.toString()} doc={doc} />
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-            {attractions.length > 0 && (
-                <div className="grid gap-4">
-                    <h3 className="text-sm font-semibold text-[#636E75]">Attractions</h3>
-                    <AttractionGrid items={attractions} />
-                </div>
+                    {bestMatches.length > 0 && (
+                        <div className="grid gap-4">
+                            <h3 className="text-sm font-semibold text-[#636E75]">
+                                Best matches
+                            </h3>
+                            <AttractionGrid items={bestMatches} />
+                        </div>
+                    )}
+
+                    {partialMatches.length > 0 && (
+                        <div className="grid gap-4">
+                            <h3 className="text-sm font-semibold text-[#636E75]">
+                                You might also like
+                            </h3>
+                            <AttractionGrid items={partialMatches} />
+                        </div>
+                    )}
+                </>
             )}
         </section>
     );
