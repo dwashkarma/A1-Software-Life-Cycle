@@ -4,6 +4,8 @@ import Destination from "@/models/Destinations";
 import Attraction from "@/models/Attraction";
 import ExploreAttractionCard from "@/components/explore-attraction-card";
 import ExploreSearch from "@/components/explore-search";
+import PreferenceModal from "@/components/preference-modal";
+import RecommendedSection from "@/components/recommended-section";
 import Image from "next/image";
 
 function escapeRegex(value: string): string {
@@ -80,6 +82,9 @@ export default async function DestinationsPage({
         <section className="">
           <ExploreSearch initialQuery={searchQuery} />
         </section>
+
+        <PreferenceModal />
+        {!searchQuery && <RecommendedSection />}
 
         <section className="">
           <h2 className="text-xl font-semibold text-[#1A1F24]">
