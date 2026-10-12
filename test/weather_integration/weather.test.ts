@@ -1,21 +1,8 @@
-/**
- * TravelMate weather functional tests (TC-01 to TC-06).
- * Tests the real WeatherCard React component with mocked responses from
- * TravelMate's /api/weather endpoint. No live API key or server is required.
- *
- * Install:
- * npm install --save-dev mocha chai sinon tsx jsdom \
- *   @types/mocha @types/chai @types/sinon @types/jsdom
- *
- * Run from project root:
- * node --import tsx ./node_modules/mocha/bin/mocha.js tests/weather.test.ts
- */
 import { before, beforeEach, afterEach, describe, it } from 'mocha';
 import { expect } from 'chai';
 import sinon from 'sinon';
 import { JSDOM } from 'jsdom';
 
-// Create a browser-like environment BEFORE importing the React UI.
 const dom = new JSDOM('<!doctype html><html><body></body></html>', {
   url: 'http://localhost:3000',
 });
@@ -135,7 +122,6 @@ describe('TravelMate – Weather Information Integration (Functional Tests)', fu
   });
 
   it('TC-03 NEGATIVE: displays a friendly message for an invalid destination', async () => {
-    // The existing API route responds with a generic 503 error for a bad city.
     fetchStub.resolves(apiResponse({ success: false, message: friendlyError }, 503));
     await renderDestination('Abcd');
 
@@ -155,8 +141,6 @@ describe('TravelMate – Weather Information Integration (Functional Tests)', fu
   });
 
   it('TC-05 NEGATIVE: handles unavailable additional weather fields without invalid text', async () => {
-    // Deliberately omit humidity, windSpeed and feelsLike.
-    // The test exposes an existing defect if UI renders "undefined".
     fetchStub.resolves(success({
       city: 'Brisbane', temperature: 28, description: 'clear sky',
     }));
