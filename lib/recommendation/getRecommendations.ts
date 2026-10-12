@@ -37,6 +37,7 @@ const notSet = (): RecommendationResult => ({
 export async function getRecommendations(
     userId: string,
 ): Promise<RecommendationResult> {
+    // throw new Error("test failure");
     if (!mongoose.Types.ObjectId.isValid(userId)) return notSet();
 
     await connectDB();
