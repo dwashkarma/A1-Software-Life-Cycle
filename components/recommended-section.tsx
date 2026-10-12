@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 
 import ExploreAttractionCard from "@/components/explore-attraction-card";
 import { decodeSession, SESSION_COOKIE } from "@/lib/auth";
-import { getRecommendations } from "@/lib/recommendation/getRecommendations";
+import { getRecommendations, RecommendationResult } from "@/lib/recommendation/getRecommendations";
 
 // Same card layout as "Popular destinations" on the explore page.
 function DestinationCard({ doc }: { doc: any }) {
@@ -64,7 +64,25 @@ export default async function RecommendedSection() {
     const session = decodeSession(cookieStore.get(SESSION_COOKIE)?.value);
     if (!session) return null; // visitors see the page as before
 
-    const recommendations = await getRecommendations(session.id);
+    // Fault isolation: a failure while loading recommendations must not break the rest of the Explore page, so it is caught here and replaced by a short message
+    let recommendations: RecommendationResult;
+    try {
+        recommendations = await getRecommendations(session.id);
+    } catch (error) {
+        console.error("Recommendations could not be loaded:", error);
+        return (
+            <section className="grid gap-3">
+                <h2 className="text-xl font-semibold text-[#1A1F24]">
+                    Recommended for you
+                </h2>
+                <div className="rounded-xl border border-[#D4D9DE] bg-white p-8 text-center text-sm text-[#636E75]">
+                    Recommendations are temporarily unavailable. You can still browse
+                    destinations and search below.
+                </div>
+            </section>
+        )
+    }
+    // const recommendations = await getRecommendations(session.id);
     if (!recommendations.preferenceSet) return null; // no preference or skipped: page as before
 
     const { destinations, attractions } = recommendations;
