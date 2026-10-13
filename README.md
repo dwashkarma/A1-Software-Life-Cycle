@@ -168,6 +168,7 @@ Stop the server with `Ctrl+C` in the terminal.
 | --------------- | -------------------------------------------------------------- |
 | `npm run dev`   | Start the local development server                             |
 | `npm run lint`  | Run ESLint                                                     |
+| `npm test`      | Run all Mocha tests                                             |
 | `npm run build` | Create a production build                                      |
 | `npm run start` | Serve the production build locally (run `npm run build` first) |
 
