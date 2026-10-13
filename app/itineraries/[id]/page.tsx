@@ -147,8 +147,21 @@ export default async function ItineraryDetailsPage({
                     {/* Thumbnail */}
                     <Link
                       href={`/attractions/${attraction._id}`}
-                      className="h-[68px] w-[103px] shrink-0 rounded-lg bg-[#D6DEE0]"
-                    />
+                      className="relative h-[68px] w-[103px] shrink-0 overflow-hidden rounded-lg bg-[#D6DEE0]"
+                    >
+                      <img
+                        src={
+                          attraction.image ||
+                          attraction.imageUrl ||
+                          attraction.thumbnail ||
+                          attraction.photo ||
+                          "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80"
+                        }
+                        alt={attraction.name}
+                        className="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    </Link>
 
                     {/* Details */}
                     <div className="flex-1">
