@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
 
+import { getSessionFromRequest } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import Attraction from "@/models/Attraction";
 import { ContentLifecycleService } from "@/app/services/content-life-cycle";
@@ -10,6 +11,13 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  if (getSessionFromRequest(request)?.role !== "admin") {
+    return NextResponse.json(
+      { success: false, error: "Admin access required" },
+      { status: 401 },
+    );
+  }
+
   try {
     const { id } = await params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
