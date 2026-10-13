@@ -11,6 +11,42 @@ Travel Mate is a trip-planning web application built with Next.js, React, TypeSc
 - Use the admin dashboard to review catalogue counts and create, edit, or remove attractions.
 - Store users, destinations, attractions, and itineraries in MongoDB.
 
+## Assignment 2
+
+Assignment 2 extends Travel Mate with content lifecycle management, personalised recommendations, weather information, and automated tests.
+
+### Admin content lifecycle
+
+- Administrators can manage attraction and destination catalogue content.
+- Attractions and destinations have one of three lifecycle statuses: `DRAFT`, `PUBLISHED`, or `ARCHIVED`. New records default to `DRAFT`.
+- Admins can publish draft content and archive draft or published content. Invalid transitions are rejected.
+- Traveller-facing discovery and detail pages show published content, keeping draft and archived items out of public listings.
+- Lifecycle changes are handled by API routes and restricted to administrators.
+
+### OOP and design patterns
+
+- **State pattern:** The content lifecycle uses a `ContentContext` with `DraftState`, `PublishState`, and `ArchivedState` implementations. The current state determines which lifecycle operations are valid.
+- **Strategy pattern:** The recommendation feature separates recommendation behavior into interchangeable strategies.
+- **Adapter pattern:** The weather feature adapts the external weather provider to the application's weather service interface.
+
+### Personalised recommendations and weather
+
+- Travellers can save and update preferences used to produce attraction recommendations.
+- Recommendation results respect published-content visibility and provide an empty state when there are no matches.
+- Weather information is retrieved through the weather service/provider abstraction and displayed for a selected destination.
+
+### Automated tests
+
+Tests use Mocha, Chai, and Sinon, with `tsx` to run TypeScript tests. The test dependencies are declared in `devDependencies`; `package-lock.json` records their resolved versions.
+
+Run the full test suite with:
+
+```bash
+npm test
+```
+
+Current tests cover lifecycle state transitions and attraction lifecycle API authorization/input validation, alongside weather functional and fuzz tests. The lifecycle API tests do not write to MongoDB. `test/setup.ts` sets a local test-only MongoDB URI for modules that require the environment variable during import; it does not start a database.
+
 ## Requirements
 
 - Node.js 20.9 or newer and npm.
@@ -27,9 +63,7 @@ Travel Mate is a trip-planning web application built with Next.js, React, TypeSc
 2. Create `.env.local` in the project root and set the MongoDB connection string:
 
    ```dotenv
-   MONGODB_URI=mongodb+srv://dwaskc_db_user:XUC6eNYXmZfnAp8U@cluster0.jkzpuax.mongodb.net/travelmate?appName=Cluster0
-   MongoUsername=dwaskc_db_user
-   MongoPassword=XUC6eNYXmZfnAp8U
+   MONGODB_URI=mongodb+srv://<username>:<password>@<cluster>/<database>
    ```
 
    For MongoDB Atlas, use the connection string provided for your cluster instead. Keep credentials private: do not commit `.env.local` or paste database passwords into source files.
@@ -74,17 +108,59 @@ Stop the server with `Ctrl+C` in the terminal.
 
 ## API Overview
 
-| Endpoint                                       | Purpose                                     |
+### Authentication
+
+| Method and endpoint     | Purpose                                 |
+| ----------------------- | --------------------------------------- |
+| `POST /api/auth/signup` | Register an account                     |
+| `POST /api/auth/login`  | Sign in and set the session cookie      |
+| `POST /api/auth/logout` | End the current session                 |
+| `GET /api/auth/me`      | Read the current user's session details |
+
+### Admin content management
+
+| Method and endpoint                            | Purpose                                                                 |
+| ---------------------------------------------- | ----------------------------------------------------------------------- |
+| `GET /api/attractions`                         | List attractions with their destination data                            |
+| `POST /api/attractions`                        | Create an attraction (admin only)                                        |
+| `GET /api/attractions/[id]`                    | Read an attraction and its destination                                  |
+| `PUT /api/attractions/[id]`                    | Update an attraction (admin only)                                        |
+| `DELETE /api/attractions/[id]`                 | Delete an attraction (admin only)                                        |
+| `PATCH /api/attractions/[id]/status`            | Publish or archive an attraction (admin only; lifecycle rules apply)     |
+| `GET /api/destinations`                         | List destinations                                                       |
+| `POST /api/destinations`                        | Create a destination (admin only)                                        |
+| `DELETE /api/destinations/[id]`                 | Delete a destination (admin only; blocked while it has attractions)       |
+| `PATCH /api/destinations/[id]/status`            | Publish or archive a destination (admin only; lifecycle rules apply)     |
+| `DELETE /api/destinations/[id]/status`           | Delete a destination (admin only)                                        |
+
+### Recommendations and preferences
+
+| Method and endpoint                       | Purpose                                                                |
+| ----------------------------------------- | ---------------------------------------------------------------------- |
+| `GET /api/attractions/categories`          | List categories from published attractions for preference selection    |
+| `GET /api/preferences`                    | Read the signed-in user's saved travel preferences                      |
+| `PUT /api/preferences`                    | Save or skip preference setup for the signed-in user                    |
+| `GET /api/recommendations`                | Get recommendations based on the signed-in user's saved preferences    |
+
+### Weather
+
+| Method and endpoint                              | Purpose                                                    |
+| ------------------------------------------------ | ---------------------------------------------------------- |
+| `GET /api/weather?destination=<destination-name>` | Fetch weather for a destination through the weather adapter |
+
+### Itineraries and diagnostics
+
+| Method and endpoint                            | Purpose                                     |
 | ---------------------------------------------- | ------------------------------------------- |
-| `POST /api/auth/signup`                        | Register an account                         |
-| `POST /api/auth/login`                         | Sign in and set the session cookie          |
-| `POST /api/auth/logout`                        | End the current session                     |
-| `GET /api/auth/me`                             | Read the current user's session details     |
-| `/api/destinations`                            | Read destination data                       |
-| `/api/attractions` and `/api/attractions/[id]` | Read and manage attraction data             |
-| `/api/itineraries` and `/api/itineraries/[id]` | Create, read, update, or remove itineraries |
-| `/api/itineraries/[id]/attractions`            | Manage attractions attached to an itinerary |
-| `GET /api/test-db`                             | Check MongoDB connectivity                  |
+| `GET /api/itineraries`                         | List the signed-in user's itineraries        |
+| `POST /api/itineraries`                        | Create an itinerary                          |
+| `GET /api/itineraries/[id]`                    | Read an itinerary owned by the signed-in user |
+| `PUT /api/itineraries/[id]`                    | Update an itinerary owned by the signed-in user |
+| `DELETE /api/itineraries/[id]`                 | Delete an itinerary owned by the signed-in user |
+| `POST /api/itineraries/[id]/attractions`       | Add an attraction to an itinerary             |
+| `DELETE /api/itineraries/[id]/attractions`      | Remove an attraction from an itinerary        |
+| `GET /api/test-db`                             | Check MongoDB connectivity                     |
+| `GET /api/seed`                                 | Seed sample data (destructive; see warning below) |
 
 ## Useful Commands
 
