@@ -1,0 +1,129 @@
+name: CI/CD
+
+# Runs when code is merged into main (or when started by hand from the Actions tab).
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+# If two runs overlap, the second one waits instead of stopping a deploy halfway.
+concurrency:
+  group: travelmate-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test: # CI process
+    name: Build and Test 
+    runs-on: self-hosted # the runner installed on the EC2 instance
+    timeout-minutes: 20
+
+    strategy:
+      matrix:
+        node-version: [22]
+
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      MongoUsername: ${{ secrets.MongoUsername }}
+      MongoPassword: ${{ secrets.MongoPassword }}
+      OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Skipped automatically while the project has no "test" script yet.
+      - name: Run tests
+        run: npm test --if-present
+      
+      - name: Build application
+        run: npm run build   
+
+  deploy:
+    name: Deploy application
+    needs: build-and-test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+    timeout-minutes: 20
+
+    env:
+      MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      MongoUsername: ${{ secrets.MongoUsername }}
+      MongoPassword: ${{ secrets.MongoPassword }}
+      OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create production environment file
+        run: |
+          test -n "$MONGODB_URI" || {
+            echo "MONGODB_URI secret is missing"
+            exit 1
+          }
+            
+          umask 077
+          {
+            printf 'MONGODB_URI=%s\n' "$MONGODB_URI"
+            printf 'MongoUsername=%s\n' "$MongoUsername"
+            printf 'MongoPassword=%s\n' "$MongoPassword"
+            printf 'OPENWEATHER_API_KEY=%s\n' "$OPENWEATHER_API_KEY"
+          } > .env.local
+
+      - name: Build production application
+        run: npm run build
+
+      - name: Start or restart application with PM2
+        run: |
+          if pm2 describe travelmate > /dev/null 2>&1; then
+            pm2 restart travelmate --update-env
+          else
+            pm2 start npm --name travelmate -- start
+          fi
+
+          pm2 save
+
+      - name: Smoke test
+        run: |
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' \
+              http://localhost:3000/ || true)
+
+            if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+              echo "Application is healthy (HTTP $code)"
+              exit 0
+            fi
+
+            sleep 3
+          done
+
+          echo "Application did not become healthy"
+          pm2 logs travelmate --lines 30 --nostream
+          exit 1
+
+      - name: Show PM2 status
+        if: always()
+        run: pm2 status
