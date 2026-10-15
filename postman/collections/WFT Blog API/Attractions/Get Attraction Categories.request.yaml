@@ -1,0 +1,17 @@
+$kind: http-request
+name: Get Attraction Categories
+order: 6000
+url: '{{baseUrl}}/api/attractions/categories'
+method: GET
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response has categories array", function () {
+        const json = pm.response.json();
+        pm.expect(json.success).to.be.true;
+        pm.expect(json.categories).to.be.an("array");
+      });

@@ -1,0 +1,4 @@
+$kind: collection
+name: Travel Mate API Documentation
+variables:
+  baseUrl: ""

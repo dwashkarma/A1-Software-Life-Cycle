@@ -1,0 +1,11 @@
+name: Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:3000'
+  - key: attractionId
+    value: ''
+  - key: destinationId
+    value: ''
+  - key: itineraryId
+    value: ''
+color: 0

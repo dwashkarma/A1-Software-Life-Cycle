@@ -1,0 +1,25 @@
+$kind: http-request
+name: Update Attraction
+order: 4000
+url: '{{baseUrl}}/api/attractions/{{attractionId}}'
+method: PUT
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "description": "Updated description for the Sydney Opera House."
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200 or 401 or 404", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 401, 404]);
+      });
+      pm.test("Response has success field", function () {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("success");
+      });

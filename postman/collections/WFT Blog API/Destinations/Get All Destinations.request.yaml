@@ -1,0 +1,22 @@
+$kind: http-request
+name: Get All Destinations
+order: 1000
+url: '{{baseUrl}}/api/destinations'
+method: GET
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200", function () {
+        pm.response.to.have.status(200);
+      });
+      pm.test("Response is an array", function () {
+        const json = pm.response.json();
+        pm.expect(json).to.be.an("array");
+      });
+      if (pm.response.code === 200) {
+        const json = pm.response.json();
+        if (json.length > 0) {
+          pm.environment.set("destinationId", json[0]._id);
+        }
+      }

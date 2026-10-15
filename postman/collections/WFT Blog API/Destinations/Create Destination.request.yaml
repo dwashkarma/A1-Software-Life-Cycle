@@ -1,0 +1,34 @@
+$kind: http-request
+name: Create Destination
+order: 2000
+url: '{{baseUrl}}/api/destinations'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Sydney",
+      "state": "New South Wales",
+      "description": "Australia's largest city, known for the Opera House and Harbour Bridge.",
+      "image": ""
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201 or 401", function () {
+        pm.expect(pm.response.code).to.be.oneOf([201, 401]);
+      });
+      if (pm.response.code === 201) {
+        const json = pm.response.json();
+        pm.test("Returns success true", function () {
+          pm.expect(json.success).to.be.true;
+        });
+        pm.test("Returns destination object", function () {
+          pm.expect(json.destination).to.have.property("_id");
+        });
+        pm.environment.set("destinationId", json.destination._id);
+      }
