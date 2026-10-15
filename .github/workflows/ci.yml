@@ -16,6 +16,7 @@ jobs:
   build-and-test: # CI process: Github-hosted, safe for pull requests
     name: Build and Test 
     runs-on: ubuntu-latest
+    environment: MONGO_URI
 
     strategy:
       matrix:
@@ -50,7 +51,8 @@ jobs:
     name: Deploy application to EC2 (${{ matrix.runner }})
     needs: build-and-test
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: [self-hosted, "${{ matrix.runner }}"]    
+    runs-on: [self-hosted, "${{ matrix.runner }}"]  
+    environment: MONGO_URI  
     timeout-minutes: 20
 
     strategy:
