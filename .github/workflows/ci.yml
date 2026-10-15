@@ -1,6 +1,5 @@
 name: CI/CD
 
-# Runs when code is merged into main (or when started by hand from the Actions tab).
 on:
   push:
     branches:
@@ -10,19 +9,13 @@ on:
       - main
   workflow_dispatch:
 
-# If two runs overlap, the second one waits instead of stopping a deploy halfway.
-concurrency:
-  group: travelmate-deploy
-  cancel-in-progress: false
-
 permissions:
   contents: read
 
 jobs:
-  build-and-test: # CI process
+  build-and-test: # CI process: Github-hosted, safe for pull requests
     name: Build and Test 
-    runs-on: self-hosted # the runner installed on the EC2 instance
-    timeout-minutes: 20
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -42,23 +35,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      # Skipped automatically while the project has no "test" script yet.
-      - name: Run tests
-        run: npm test --if-present
+      - name: Run Tests
+        run: npm test
       
       - name: Build application
         run: npm run build   
 
-  deploy:
-    name: Deploy application
+  deploy: # CD: Deploy on EC2 (self-hosted runner, only on main)
+    name: Deploy application to EC2 (${{ matrix.runner }})
     needs: build-and-test
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: self-hosted
+    runs-on: [self-hosted, "${{ matrix.runner }}"]    
     timeout-minutes: 20
+
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [travelmate-ec2-1, travelmate-ec2-2]
 
     env:
       MONGODB_URI: ${{ secrets.MONGODB_URI }}
@@ -99,9 +97,9 @@ jobs:
       - name: Start or restart application with PM2
         run: |
           if pm2 describe travelmate > /dev/null 2>&1; then
-            pm2 restart travelmate --update-env
+            PORT=3000 pm2 restart travelmate --update-env
           else
-            pm2 start npm --name travelmate -- start
+            PORT=3000 pm2 start npm --name travelmate -- start
           fi
 
           pm2 save
