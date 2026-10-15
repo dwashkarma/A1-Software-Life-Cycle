@@ -1,0 +1,21 @@
+$kind: http-request
+name: Get All Itineraries
+order: 1000
+url: '{{baseUrl}}/api/itineraries'
+method: GET
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 200 or 401", function () {
+        pm.expect(pm.response.code).to.be.oneOf([200, 401]);
+      });
+      if (pm.response.code === 200) {
+        const json = pm.response.json();
+        pm.test("Response has itineraries array", function () {
+          pm.expect(json.itineraries).to.be.an("array");
+        });
+        if (json.itineraries && json.itineraries.length > 0) {
+          pm.environment.set("itineraryId", json.itineraries[0]._id);
+        }
+      }

@@ -1,0 +1,28 @@
+$kind: http-request
+name: Signup
+order: 1000
+url: '{{baseUrl}}/api/auth/signup'
+method: POST
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "name": "Test User",
+      "email": "testuser@example.com",
+      "password": "password123",
+      "role": "traveller"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      pm.test("Status is 201 or 409", function () {
+        pm.expect(pm.response.code).to.be.oneOf([201, 409]);
+      });
+      pm.test("Response has success field", function () {
+        const json = pm.response.json();
+        pm.expect(json).to.have.property("success");
+      });
