@@ -5,18 +5,6 @@ import { encodeSession, SESSION_COOKIE } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 
-function isSecureRequest(request: Request) {
-  const forwardedProto = request.headers
-    .get("x-forwarded-proto")
-    ?.split(",")[0]
-    .trim()
-    .toLowerCase();
-
-  return (
-    new URL(request.url).protocol === "https:" || forwardedProto === "https"
-  );
-}
-
 export async function POST(request: Request) {
   try {
     await connectDB();
@@ -83,7 +71,7 @@ export async function POST(request: Request) {
       }),
       {
         httpOnly: true,
-        secure: isSecureRequest(request),
+        secure: false,
         sameSite: "lax",
         path: "/",
         maxAge: 60 * 60 * 24 * 7,
