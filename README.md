@@ -188,6 +188,7 @@ Stop the server with `Ctrl+C` in the terminal.
 
 - **MongoDB connection error:** Confirm `.env.local` exists, `MONGODB_URI` is correct, and your local MongoDB service or Atlas cluster is reachable. Restart the dev server after changing environment variables.
 - **Protected page redirects to login:** Sign in first; dashboard, itinerary, destination, attraction, and admin sections require a session. Admin pages require an administrator role.
+- **Session cookie behind a proxy:** Login marks the session cookie `Secure` when the request uses HTTPS or the proxy forwards `X-Forwarded-Proto: https`. Plain HTTP requests receive a cookie without `Secure`, so use HTTPS for public deployments; unencrypted HTTP can expose sessions.
 - **Lint or build errors:** Run `npm run lint` or `npm run build` and address the first reported error before investigating follow-on failures.
   This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
