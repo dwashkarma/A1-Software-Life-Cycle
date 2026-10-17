@@ -44,13 +44,9 @@ function request(
   options: {
     role?: "admin" | "traveller";
     body?: unknown;
-    forwardedProto?: string;
   } = {},
 ): NextRequest {
   const headers = new Headers({ "Content-Type": "application/json" });
-  if (options.forwardedProto) {
-    headers.set("x-forwarded-proto", options.forwardedProto);
-  }
   if (options.role) {
     headers.set(
       "Cookie",
@@ -523,7 +519,7 @@ describe("Uncovered API functional tests", () => {
       expect(response.headers.get("set-cookie")).not.to.include("Secure");
     });
 
-    it("POST /api/auth/login marks session cookies secure behind an HTTPS proxy", async () => {
+    it("POST /api/auth/login does not mark session cookies secure over HTTP in production", async () => {
       sinon.stub(User, "findOne").resolves({
         _id: USER_ID,
         name: "Traveller",
@@ -532,16 +528,19 @@ describe("Uncovered API functional tests", () => {
         role: "traveller",
       } as never);
       sinon.stub(bcrypt, "compare").resolves(true);
+      sinon.stub(process, "env").value({
+        ...process.env,
+        NODE_ENV: "production",
+      });
 
       const response = await authLoginRoutes.POST(
         request("POST", "http://localhost/api/auth/login", {
           body: { email: "traveller@example.com", password: "password123" },
-          forwardedProto: "https",
         }),
       );
 
       expect(response.status).to.equal(200);
-      expect(response.headers.get("set-cookie")).to.include("Secure");
+      expect(response.headers.get("set-cookie")).not.to.include("Secure");
     });
 
     it("POST /api/auth/logout clears the session cookie", async () => {
